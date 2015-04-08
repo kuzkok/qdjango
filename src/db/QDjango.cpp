@@ -52,7 +52,7 @@ void QDjangoDatabase::threadFinished()
     disconnect(thread, SIGNAL(finished()), this, SLOT(threadFinished()));
     const QString connectionName = copies.value(thread).connectionName();
     copies.remove(thread);
-    if (connectionName.startsWith(QLatin1String(connectionPrefix)))
+    if (connectionName.startsWith(QString(connectionPrefix)))
         QSqlDatabase::removeDatabase(connectionName);
 }
 
@@ -64,15 +64,15 @@ static void closeDatabase()
 static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
 {
     const QString driverName = db.driverName();
-    if (driverName == QLatin1String("QMYSQL") ||
-        driverName == QLatin1String("QMYSQL3"))
+    if (driverName == QString("QMYSQL") ||
+        driverName == QString("QMYSQL3"))
         return QDjangoDatabase::MySqlServer;
-    else if (driverName == QLatin1String("QSQLITE") ||
-             driverName == QLatin1String("QSQLITE2"))
+    else if (driverName == QString("QSQLITE") ||
+             driverName == QString("QSQLITE2"))
         return QDjangoDatabase::SQLite;
-    else if (driverName == QLatin1String("QPSQL"))
+    else if (driverName == QString("QPSQL"))
         return QDjangoDatabase::PostgreSQL;
-    else if (driverName == QLatin1String("QODBC")) {
+    else if (driverName == QString("QODBC")) {
         QSqlQuery query(db);
         if (query.exec("SELECT sqlite_version()"))
             return QDjangoDatabase::SQLite;
@@ -128,8 +128,8 @@ bool QDjangoQuery::exec()
         QMapIterator<QString, QVariant> i(boundValues());
         while (i.hasNext()) {
             i.next();
-            qDebug() << "SQL   " << i.key().toLatin1().data() << "="
-                     << i.value().toString().toLatin1().data();
+            qDebug() << "SQL   " << i.key().data() << "="
+                     << i.value().toString().data();
         }
     }
     if (!QSqlQuery::exec()) {
@@ -181,7 +181,7 @@ QSqlDatabase QDjango::database()
     // create a new connection for this thread
     QObject::connect(thread, SIGNAL(finished()), globalDatabase, SLOT(threadFinished()));
     QSqlDatabase db = QSqlDatabase::cloneDatabase(globalDatabase->reference,
-        QLatin1String(connectionPrefix) + QString::number(globalDatabase->connectionId++));
+        QString(connectionPrefix) + QString::number(globalDatabase->connectionId++));
     db.open();
     initDatabase(db);
     globalDatabase->copies.insert(thread, db);
